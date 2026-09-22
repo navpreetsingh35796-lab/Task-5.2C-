@@ -1,0 +1,321 @@
+# ============================================================
+# SIT210 - Embedded Systems Development
+# Task: 5.2C - Change the Light Intensity Using GUI
+#
+# Name: Navpreet
+# Roll No: 2510994811
+#
+# Description:
+# This program uses a Tkinter GUI to control the living room
+# LED connected to a Raspberry Pi. The LED brightness is
+# controlled using PWM and a GUI intensity slider.
+# ============================================================
+
+
+import tkinter as tk
+from tkinter import ttk
+import RPi.GPIO as GPIO
+
+
+# ============================================================
+# GPIO SETUP
+# ============================================================
+
+# Living Room LED
+LED_PIN = 18
+
+# Use BCM GPIO numbering
+GPIO.setmode(GPIO.BCM)
+
+# Set LED pin as output
+GPIO.setup(LED_PIN, GPIO.OUT)
+
+# Create PWM object
+# Frequency = 1000 Hz
+pwm = GPIO.PWM(LED_PIN, 1000)
+
+# Start PWM with LED OFF
+pwm.start(0)
+
+
+# ============================================================
+# FUNCTIONS
+# ============================================================
+
+def change_intensity(value):
+    """
+    Change the brightness of the LED according to
+    the value selected on the GUI slider.
+    """
+
+    intensity = float(value)
+
+    # Change PWM duty cycle
+    pwm.ChangeDutyCycle(intensity)
+
+    # Update intensity displayed on GUI
+    intensity_label.config(
+        text=f"Intensity: {int(intensity)}%"
+    )
+
+    # Update status
+    if intensity > 0:
+        status_label.config(
+            text="Living Room Light: ON"
+        )
+    else:
+        status_label.config(
+            text="Living Room Light: OFF"
+        )
+
+
+def turn_on():
+    """
+    Turn ON the living room LED using
+    the intensity selected on the slider.
+    """
+
+    intensity = intensity_slider.get()
+
+    pwm.ChangeDutyCycle(intensity)
+
+    status_label.config(
+        text="Living Room Light: ON"
+    )
+
+    intensity_label.config(
+        text=f"Intensity: {int(intensity)}%"
+    )
+
+
+def turn_off():
+    """
+    Turn OFF the living room LED.
+    """
+
+    pwm.ChangeDutyCycle(0)
+
+    status_label.config(
+        text="Living Room Light: OFF"
+    )
+
+    intensity_label.config(
+        text="Intensity: 0%"
+    )
+
+
+def close_program():
+    """
+    Stop PWM and clean up GPIO before
+    closing the program.
+    """
+
+    pwm.stop()
+
+    GPIO.cleanup()
+
+    window.destroy()
+
+
+# ============================================================
+# CREATE GUI WINDOW
+# ============================================================
+
+window = tk.Tk()
+
+window.title("SIT210 - Task 5.2C")
+
+window.geometry("550x450")
+
+window.resizable(False, False)
+
+
+# ============================================================
+# TASK HEADER
+# ============================================================
+
+header_label = tk.Label(
+    window,
+    text="SIT210 - Embedded Systems Development",
+    font=("Arial", 18, "bold")
+)
+
+header_label.pack(pady=(20, 5))
+
+
+task_label = tk.Label(
+    window,
+    text="Task 5.2C - Change the Light Intensity Using GUI",
+    font=("Arial", 14, "bold")
+)
+
+task_label.pack(pady=5)
+
+
+# ============================================================
+# STUDENT DETAILS
+# ============================================================
+
+name_label = tk.Label(
+    window,
+    text="Name: Navpreet",
+    font=("Arial", 12)
+)
+
+name_label.pack(pady=2)
+
+
+roll_label = tk.Label(
+    window,
+    text="Roll No: 2510994811",
+    font=("Arial", 12)
+)
+
+roll_label.pack(pady=2)
+
+
+# ============================================================
+# STATUS LABEL
+# ============================================================
+
+status_label = tk.Label(
+    window,
+    text="Living Room Light: OFF",
+    font=("Arial", 15, "bold")
+)
+
+status_label.pack(pady=(25, 10))
+
+
+# ============================================================
+# ON / OFF BUTTONS
+# ============================================================
+
+button_frame = tk.Frame(window)
+
+button_frame.pack(pady=10)
+
+
+on_button = tk.Button(
+    button_frame,
+    text="ON",
+    width=15,
+    height=2,
+    command=turn_on
+)
+
+on_button.grid(
+    row=0,
+    column=0,
+    padx=10
+)
+
+
+off_button = tk.Button(
+    button_frame,
+    text="OFF",
+    width=15,
+    height=2,
+    command=turn_off
+)
+
+off_button.grid(
+    row=0,
+    column=1,
+    padx=10
+)
+
+
+# ============================================================
+# INTENSITY SLIDER
+# ============================================================
+
+intensity_title = tk.Label(
+    window,
+    text="Living Room Light Intensity",
+    font=("Arial", 14, "bold")
+)
+
+intensity_title.pack(pady=(25, 5))
+
+
+intensity_slider = ttk.Scale(
+    window,
+    from_=0,
+    to=100,
+    orient="horizontal",
+    length=400,
+    command=change_intensity
+)
+
+# Set initial intensity to 50%
+intensity_slider.set(50)
+
+intensity_slider.pack(pady=10)
+
+
+# ============================================================
+# INTENSITY VALUE
+# ============================================================
+
+intensity_label = tk.Label(
+    window,
+    text="Intensity: 50%",
+    font=("Arial", 13)
+)
+
+intensity_label.pack(pady=5)
+
+
+# ============================================================
+# PWM INFORMATION
+# ============================================================
+
+pwm_label = tk.Label(
+    window,
+    text="PWM Frequency: 1000 Hz",
+    font=("Arial", 11)
+)
+
+pwm_label.pack(pady=5)
+
+
+gpio_label = tk.Label(
+    window,
+    text="Living Room LED: GPIO 18",
+    font=("Arial", 11)
+)
+
+gpio_label.pack(pady=2)
+
+
+# ============================================================
+# EXIT BUTTON
+# ============================================================
+
+exit_button = tk.Button(
+    window,
+    text="EXIT",
+    width=15,
+    height=2,
+    command=close_program
+)
+
+exit_button.pack(pady=20)
+
+
+# ============================================================
+# HANDLE WINDOW CLOSE
+# ============================================================
+
+window.protocol(
+    "WM_DELETE_WINDOW",
+    close_program
+)
+
+
+# ============================================================
+# START GUI
+# ============================================================
+
+window.mainloop()
